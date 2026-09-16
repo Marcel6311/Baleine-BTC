@@ -141,14 +141,10 @@
   </header>
 
   <div class="banner">
-    <strong>Ce que fait cet outil :</strong> il surveille les transactions Bitcoin récentes non confirmées (mempool) et affiche celles qui dépassent le seuil choisi. Il ne consulte que les <strong>10 dernières transactions</strong> vues par l'API publique mempool.space à chaque vérification : si plus de 10 transactions arrivent entre deux vérifications, certaines peuvent être manquées. Ce n'est pas un flux exhaustif du réseau.
-  </div>
+    <strong>Ce que fait cet outil :</strong> il surveille les transactions Bitcoin récentes non confirmées (mempool) et affiche celles qui dépassent le seuil choisi.
 
   <div class="banner warn">
-    <strong>Ce que ça ne dit pas :</strong> une grosse transaction on-chain n'est pas forcément une vente. Sans service payant de labellisation d'adresses, on ne peut identifier une direction (dépôt vers un exchange / retrait d'un exchange) que pour les adresses que <strong>vous</strong> aurez configurées vous-même ci-dessous dans le code (liste vide par défaut). Tant qu'aucune adresse n'est renseignée, toutes les transactions restent marquées "origine inconnue" et le solde n'est pas calculable.
-  </div>
-
-  <div class="controls">
+    <strong>Ce que ça ne dit pas :</strong> une grosse transaction on-chain n'est pas forcément une vente. 
     <label for="threshold">Seuil (BTC) :</label>
     <input type="number" id="threshold" value="5" min="0.1" step="0.1">
     <button id="refreshBtn">Vérifier maintenant</button>
