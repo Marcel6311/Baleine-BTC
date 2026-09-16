@@ -155,11 +155,6 @@
     <span class="status" id="statusLine">—</span>
   </div>
 
-  <div class="balance-card gray" id="balanceCard">
-    <div class="balance-value gray" id="balanceValue">N/D</div>
-    <div class="balance-label" id="balanceLabel">Aucune adresse d'exchange configurée — solde non calculable</div>
-  </div>
-
   <table>
     <thead>
       <tr>
@@ -210,9 +205,6 @@
   const refreshBtn = document.getElementById("refreshBtn");
   const statusLine = document.getElementById("statusLine");
   const txBody = document.getElementById("txBody");
-  const balanceCard = document.getElementById("balanceCard");
-  const balanceValue = document.getElementById("balanceValue");
-  const balanceLabel = document.getElementById("balanceLabel");
 
   function satsToBtc(sats) {
     return sats / 1e8;
@@ -256,36 +248,6 @@
     const vinHit = (tx.vin || []).some(i => i.prevout && i.prevout.scriptpubkey_address && EXCHANGE_ADDRESSES[i.prevout.scriptpubkey_address]);
     if (vinHit) return "out";
     return "unknown";
-  }
-
-  function recomputeBalance() {
-    if (Object.keys(EXCHANGE_ADDRESSES).length === 0) {
-      balanceCard.className = "balance-card gray";
-      balanceValue.className = "balance-value gray";
-      balanceValue.textContent = "N/D";
-      balanceLabel.textContent = "Aucune adresse d'exchange configurée — solde non calculable";
-      return;
-    }
-    let net = 0;
-    let hasData = false;
-    for (const r of rows) {
-      if (r.direction === "in") { net -= r.btc; hasData = true; }
-      else if (r.direction === "out") { net += r.btc; hasData = true; }
-    }
-    if (!hasData) {
-      balanceCard.className = "balance-card gray";
-      balanceValue.className = "balance-value gray";
-      balanceValue.textContent = "N/D";
-      balanceLabel.textContent = "Aucun mouvement identifié pour l'instant sur vos adresses configurées";
-      return;
-    }
-    const positive = net >= 0;
-    balanceCard.className = "balance-card " + (positive ? "green" : "red");
-    balanceValue.className = "balance-value " + (positive ? "green" : "red");
-    balanceValue.textContent = (positive ? "+" : "") + net.toFixed(3) + " BTC";
-    balanceLabel.textContent = positive
-      ? "Solde net cette session : plus de retraits identifiés hors exchanges que de dépôts (accumulation)"
-      : "Solde net cette session : plus de dépôts identifiés vers des exchanges que de retraits (pression vendeuse potentielle)";
   }
 
   function renderRows() {
@@ -347,7 +309,6 @@
       if (rows.length > MAX_ROWS) rows.length = MAX_ROWS;
 
       renderRows();
-      recomputeBalance();
       statusLine.textContent = "Dernière vérification : " + fmtTime(new Date()) + " · prochaine dans " + Math.round(REFRESH_MS / 1000) + "s";
     } catch (err) {
       console.error("[baleines-btc] erreur de vérification :", err.message);
