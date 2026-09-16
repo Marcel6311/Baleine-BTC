@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baleines BTC</title>
+<style>
+  :root {
+    --bg: #0c0d10;
+    --panel: #16181d;
+    --panel-border: #262932;
+    --text: #e8e9ec;
+    --muted: #8a8f9c;
+    --accent: #f7931a;
+    --green: #2ecc71;
+    --green-bg: rgba(46, 204, 113, 0.12);
+    --red: #e74c3c;
+    --red-bg: rgba(231, 76, 60, 0.12);
+    --gray: #6b7280;
+    --gray-bg: rgba(107, 114, 128, 0.12);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 20px;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid var(--panel-border);
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+  }
+  h1 { font-size: 1.4rem; margin: 0; }
+  h1 span { color: var(--accent); }
+  .version { color: var(--muted); font-size: 0.85rem; }
+  .banner {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .banner strong { color: var(--text); }
+  .banner.warn { border-left-color: var(--red); }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 18px;
+  }
+  .controls label { font-size: 0.85rem; color: var(--muted); }
+  .controls input[type="number"] {
+    background: #0c0d10;
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 6px 8px;
+    width: 90px;
+    font-size: 0.95rem;
+  }
+  button {
+    background: var(--accent);
+    color: #10110f;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  button:hover { opacity: 0.9; }
+  .status {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-left: auto;
+  }
+  .balance-card {
+    border-radius: 8px;
+    border: 1px solid var(--panel-border);
+    padding: 18px;
+    margin-bottom: 18px;
+    text-align: center;
+  }
+  .balance-card.green { background: var(--green-bg); border-color: var(--green); }
+  .balance-card.red { background: var(--red-bg); border-color: var(--red); }
+  .balance-card.gray { background: var(--gray-bg); border-color: var(--gray); }
+  .balance-value { font-size: 1.8rem; font-weight: 700; }
+  .balance-value.green { color: var(--green); }
+  .balance-value.red { color: var(--red); }
+  .balance-value.gray { color: var(--gray); }
+  .balance-label { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--panel-border); }
+  th { color: var(--muted); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  td.amount { font-variant-numeric: tabular-nums; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .badge.green { background: var(--green-bg); color: var(--green); }
+  .badge.red { background: var(--red-bg); color: var(--red); }
+  .badge.gray { background: var(--gray-bg); color: var(--gray); }
+  .empty { color: var(--muted); font-size: 0.85rem; padding: 20px 0; text-align: center; }
+  footer {
+    margin-top: 24px;
+    padding-top: 14px;
+    border-top: 1px solid var(--panel-border);
+    color: var(--muted);
+    font-size: 0.75rem;
+    text-align: center;
+  }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>🐋 Baleines <span>BTC</span></h1>
+    <div class="version">v1.0</div>
+  </header>
+
+  <div class="banner">
+    <strong>Ce que fait cet outil :</strong> il surveille les transactions Bitcoin récentes non confirmées (mempool) et affiche celles qui dépassent le seuil choisi. Il ne consulte que les <strong>10 dernières transactions</strong> vues par l'API publique mempool.space à chaque vérification : si plus de 10 transactions arrivent entre deux vérifications, certaines peuvent être manquées. Ce n'est pas un flux exhaustif du réseau.
+  </div>
+
+  <div class="banner warn">
+    <strong>Ce que ça ne dit pas :</strong> une grosse transaction on-chain n'est pas forcément une vente. Sans service payant de labellisation d'adresses, on ne peut identifier une direction (dépôt vers un exchange / retrait d'un exchange) que pour les adresses que <strong>vous</strong> aurez configurées vous-même ci-dessous dans le code (liste vide par défaut). Tant qu'aucune adresse n'est renseignée, toutes les transactions restent marquées "origine inconnue" et le solde n'est pas calculable.
+  </div>
+
+  <div class="controls">
+    <label for="threshold">Seuil (BTC) :</label>
+    <input type="number" id="threshold" value="5" min="0.1" step="0.1">
+    <button id="refreshBtn">Vérifier maintenant</button>
+    <span class="status" id="statusLine">—</span>
+  </div>
+
+  <div class="balance-card gray" id="balanceCard">
+    <div class="balance-value gray" id="balanceValue">N/D</div>
+    <div class="balance-label" id="balanceLabel">Aucune adresse d'exchange configurée — solde non calculable</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Détecté à</th>
+        <th>Montant</th>
+        <th>≈ Valeur (CHF)</th>
+        <th>Direction</th>
+        <th>Transaction</th>
+      </tr>
+    </thead>
+    <tbody id="txBody">
+      <tr><td colspan="5" class="empty">Aucune transaction détectée pour l'instant.</td></tr>
+    </tbody>
+  </table>
+
+  <footer>
+    Données : <a href="https://mempool.space" target="_blank" rel="noopener">mempool.space</a> (API publique, gratuite) · Prototype de suivi de gros mouvements on-chain — pas un conseil financier · CC-BY 4.0
+  </footer>
+
+</div>
+
+<script>
+  // -----------------------------------------------------------------------
+  // Liste d'adresses d'exchanges connues, À REMPLIR PAR VOUS-MÊME.
+  // Volontairement vide par défaut : plutôt que d'inventer ou de recopier
+  // des adresses non vérifiées, il est plus sûr que vous ajoutiez ici
+  // celles que vous avez vous-même confirmées via une source fiable
+  // (explorateur de blocs, annonce officielle d'un exchange, etc.).
+  // Format : "adresse_bitcoin": "Nom affiché"
+  // Exemple (à titre d'illustration du format uniquement — décommentez
+  // et remplacez par une adresse que vous avez vérifiée) :
+  // const EXCHANGE_ADDRESSES = {
+  //   "bc1qxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx": "Binance (exemple)"
+  // };
+  const EXCHANGE_ADDRESSES = {};
+  // -----------------------------------------------------------------------
+
+  const API_BASE = "https://mempool.space/api";
+  const REFRESH_MS = 45000;
+  const MAX_ROWS = 50;
+
+  const seenTxids = new Set();
+  const rows = []; // {time, btc, chf, direction: 'in'|'out'|'unknown', txid}
+  let chfRate = null;
+  let chfRateFetchedAt = 0;
+
+  const thresholdInput = document.getElementById("threshold");
+  const refreshBtn = document.getElementById("refreshBtn");
+  const statusLine = document.getElementById("statusLine");
+  const txBody = document.getElementById("txBody");
+  const balanceCard = document.getElementById("balanceCard");
+  const balanceValue = document.getElementById("balanceValue");
+  const balanceLabel = document.getElementById("balanceLabel");
+
+  function satsToBtc(sats) {
+    return sats / 1e8;
+  }
+
+  function fmtBtc(v) {
+    return v.toFixed(v >= 100 ? 1 : 3) + " BTC";
+  }
+
+  function fmtTime(d) {
+    return d.toLocaleTimeString("fr-CH", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }
+
+  async function fetchChfRate() {
+    // Rafraîchi au maximum toutes les 5 minutes.
+    if (chfRate !== null && Date.now() - chfRateFetchedAt < 5 * 60 * 1000) return chfRate;
+    try {
+      const res = await fetch(API_BASE + "/v1/prices?_t=" + Date.now(), { cache: "no-store" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      if (data && typeof data.CHF === "number") {
+        chfRate = data.CHF;
+        chfRateFetchedAt = Date.now();
+      }
+    } catch (err) {
+      console.error("[baleines-btc] impossible de récupérer le taux CHF :", err.message);
+      // On continue sans conversion CHF plutôt que de bloquer l'outil.
+    }
+    return chfRate;
+  }
+
+  function classifyAddresses(tx) {
+    // Retourne 'in' si une adresse de sortie (vout) est un exchange connu
+    // (dépôt vers exchange -> pression vendeuse potentielle),
+    // 'out' si une adresse d'entrée (vin) est un exchange connu
+    // (retrait depuis un exchange -> accumulation),
+    // 'unknown' sinon.
+    if (Object.keys(EXCHANGE_ADDRESSES).length === 0) return "unknown";
+    const voutHit = (tx.vout || []).some(o => o.scriptpubkey_address && EXCHANGE_ADDRESSES[o.scriptpubkey_address]);
+    if (voutHit) return "in";
+    const vinHit = (tx.vin || []).some(i => i.prevout && i.prevout.scriptpubkey_address && EXCHANGE_ADDRESSES[i.prevout.scriptpubkey_address]);
+    if (vinHit) return "out";
+    return "unknown";
+  }
+
+  function recomputeBalance() {
+    if (Object.keys(EXCHANGE_ADDRESSES).length === 0) {
+      balanceCard.className = "balance-card gray";
+      balanceValue.className = "balance-value gray";
+      balanceValue.textContent = "N/D";
+      balanceLabel.textContent = "Aucune adresse d'exchange configurée — solde non calculable";
+      return;
+    }
+    let net = 0;
+    let hasData = false;
+    for (const r of rows) {
+      if (r.direction === "in") { net -= r.btc; hasData = true; }
+      else if (r.direction === "out") { net += r.btc; hasData = true; }
+    }
+    if (!hasData) {
+      balanceCard.className = "balance-card gray";
+      balanceValue.className = "balance-value gray";
+      balanceValue.textContent = "N/D";
+      balanceLabel.textContent = "Aucun mouvement identifié pour l'instant sur vos adresses configurées";
+      return;
+    }
+    const positive = net >= 0;
+    balanceCard.className = "balance-card " + (positive ? "green" : "red");
+    balanceValue.className = "balance-value " + (positive ? "green" : "red");
+    balanceValue.textContent = (positive ? "+" : "") + net.toFixed(3) + " BTC";
+    balanceLabel.textContent = positive
+      ? "Solde net cette session : plus de retraits identifiés hors exchanges que de dépôts (accumulation)"
+      : "Solde net cette session : plus de dépôts identifiés vers des exchanges que de retraits (pression vendeuse potentielle)";
+  }
+
+  function renderRows() {
+    if (rows.length === 0) {
+      txBody.innerHTML = '<tr><td colspan="5" class="empty">Aucune transaction détectée pour l\'instant.</td></tr>';
+      return;
+    }
+    txBody.innerHTML = rows.map(r => {
+      let badge;
+      if (r.direction === "in") badge = '<span class="badge red">Vers exchange</span>';
+      else if (r.direction === "out") badge = '<span class="badge green">Depuis exchange</span>';
+      else badge = '<span class="badge gray">Origine inconnue</span>';
+      const chfTxt = r.chf !== null ? r.chf.toLocaleString("fr-CH", { maximumFractionDigits: 0 }) + " CHF" : "—";
+      return "<tr>" +
+        "<td>" + fmtTime(r.time) + "</td>" +
+        '<td class="amount">' + fmtBtc(r.btc) + "</td>" +
+        '<td class="amount">' + chfTxt + "</td>" +
+        "<td>" + badge + "</td>" +
+        '<td><a href="https://mempool.space/tx/' + r.txid + '" target="_blank" rel="noopener">voir ↗</a></td>' +
+        "</tr>";
+    }).join("");
+  }
+
+  async function checkNow() {
+    const threshold = parseFloat(thresholdInput.value) || 5;
+    statusLine.textContent = "Vérification en cours…";
+    try {
+      const res = await fetch(API_BASE + "/mempool/recent?_t=" + Date.now(), { cache: "no-store" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const recent = await res.json();
+      const rate = await fetchChfRate();
+
+      const bigOnes = (recent || []).filter(t => !seenTxids.has(t.txid) && satsToBtc(t.value) >= threshold);
+
+      for (const t of bigOnes) {
+        seenTxids.add(t.txid);
+        let direction = "unknown";
+        if (Object.keys(EXCHANGE_ADDRESSES).length > 0) {
+          try {
+            const detailRes = await fetch(API_BASE + "/tx/" + t.txid + "?_t=" + Date.now(), { cache: "no-store" });
+            if (detailRes.ok) {
+              const detail = await detailRes.json();
+              direction = classifyAddresses(detail);
+            }
+          } catch (e) {
+            console.error("[baleines-btc] détail transaction indisponible :", e.message);
+          }
+        }
+        const btc = satsToBtc(t.value);
+        rows.unshift({
+          time: new Date(),
+          btc: btc,
+          chf: rate !== null ? btc * rate : null,
+          direction: direction,
+          txid: t.txid
+        });
+      }
+
+      if (rows.length > MAX_ROWS) rows.length = MAX_ROWS;
+
+      renderRows();
+      recomputeBalance();
+      statusLine.textContent = "Dernière vérification : " + fmtTime(new Date()) + " · prochaine dans " + Math.round(REFRESH_MS / 1000) + "s";
+    } catch (err) {
+      console.error("[baleines-btc] erreur de vérification :", err.message);
+      statusLine.textContent = "Erreur : " + err.message + " (voir la console pour le détail — si c'est une erreur CORS, il faudra passer par un petit backend proxy)";
+    }
+  }
+
+  refreshBtn.addEventListener("click", checkNow);
+  checkNow();
+  setInterval(checkNow, REFRESH_MS);
+</script>
+</body>
+</html>
